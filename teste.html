@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de JSONP com Deezer API</title>
+</head>
+<body>
+    <h1>Teste de JSONP com Deezer API</h1>
+
+    <script>
+        function handleDeezerResponse(data) {
+            console.log(data);
+        }
+
+        const info = {
+            artist: 'Fernandinho',
+            song: 'Galileu'
+        };
+
+        const script = document.createElement('script');
+        script.src = `https://api.deezer.com/search?q=${info.artist} ${info.song}&output=jsonp&callback=handleDeezerResponse`;
+        document.body.appendChild(script);
+    </script>
+</body>
+</html>
