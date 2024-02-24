@@ -290,57 +290,65 @@ connectToEventSource(url);
 
 // Define a função de manipulação da resposta da API do Deezer no escopo global
 function handleDeezerResponse(data, song) {
+    var coverArt = document.getElementById('currentCoverArt');
+    var coverBackground = document.getElementById('bgCover');
+
     if (data.data && data.data.length > 0) {
         var artworkUrl = data.data[0].artist.picture_big;
-        var coverArt = document.getElementById('currentCoverArt');
-        var coverBackground = document.getElementById('bgCover');
 
         coverArt.style.backgroundImage = 'url(' + artworkUrl + ')';
         coverArt.className = 'animated bounceInLeft';
 
         coverBackground.style.backgroundImage = 'url(' + artworkUrl + ')';
+    } else {
+        // Caso não haja dados ou a lista de dados esteja vazia,
+        // defina a capa padrão
+        var defaultArtworkUrl = 'img/cover.png';
 
-        setTimeout(function () {
-            coverArt.className = '';
-        }, 2000);
+        coverArt.style.backgroundImage = 'url(' + defaultArtworkUrl + ')';
+        coverBackground.style.backgroundImage = 'url(' + defaultArtworkUrl + ')';
+    }
 
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: song, // Utiliza a variável song passada como parâmetro
-                artist: data.data[0].artist.name, // Adapte isso conforme a estrutura do seu objeto de dados
-                artwork: [{
-                        src: artworkUrl,
-                        sizes: '96x96',
-                        type: 'image/png'
-                    },
-                    {
-                        src: artworkUrl,
-                        sizes: '128x128',
-                        type: 'image/png'
-                    },
-                    {
-                        src: artworkUrl,
-                        sizes: '192x192',
-                        type: 'image/png'
-                    },
-                    {
-                        src: artworkUrl,
-                        sizes: '256x256',
-                        type: 'image/png'
-                    },
-                    {
-                        src: artworkUrl,
-                        sizes: '384x384',
-                        type: 'image/png'
-                    },
-                    {
-                        src: artworkUrl,
-                        sizes: '512x512',
-                        type: 'image/png'
-                    }
-                ]
-            });
-        }
+    setTimeout(function () {
+        coverArt.className = '';
+    }, 2000);
+
+    if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: song,
+            artist: data.data[0].artist.name,
+            artwork: [{
+                    src: artworkUrl || defaultArtworkUrl,
+                    sizes: '96x96',
+                    type: 'image/png'
+                },
+                {
+                    src: artworkUrl || defaultArtworkUrl,
+                    sizes: '128x128',
+                    type: 'image/png'
+                },
+                {
+                    src: artworkUrl || defaultArtworkUrl,
+                    sizes: '192x192',
+                    type: 'image/png'
+                },
+                {
+                    src: artworkUrl || defaultArtworkUrl,
+                    sizes: '256x256',
+                    type: 'image/png'
+                },
+                {
+                    src: artworkUrl || defaultArtworkUrl,
+                    sizes: '384x384',
+                    type: 'image/png'
+                },
+                {
+                    src: artworkUrl || defaultArtworkUrl,
+                    sizes: '512x512',
+                    type: 'image/png'
+                }
+            ]
+        });
     }
 }
 
