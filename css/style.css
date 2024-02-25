@@ -51,7 +51,7 @@ body {
 
 .web-player {
     height: 100%;
-    color: #fff;
+    color: #fefefe;
     padding: 5px;
     position: relative;
     z-index: 3;
@@ -67,7 +67,6 @@ body {
     box-shadow: 0px 5px 10px 3px rgba(0, 0, 0, 0.4);
     transition: background-image 1s;
     border-radius: 10px;
-
     margin-bottom: 15px;
 }
 
@@ -95,7 +94,7 @@ body {
 }
 
 .info-current-song h2 {
-    font-size: 40px;
+    font-size: 38px;
     text-transform: uppercase;
     font-weight: 800;
     text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
@@ -120,9 +119,6 @@ body {
 
 .play-pause {
     font-size: 65px;
-
-   
- 
 }
 
 .play-pause i {
@@ -134,39 +130,44 @@ body {
     margin-top: -5px;
 }
 
+.volume-slide {
+     /* Adicionando sombra */
+     text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
+}
 
 .volume-control {
     display: none;
 }
 
 .vagalume a {
-    color: #fff;
+    color: #fefefe;
     text-decoration: underline;
 }
 
 .lyrics {
     text-transform: uppercase;
-    text-decoration: underline;
-    color: #fff;
+    text-decoration: none;
+    color: #fefefe;
     font-size: 1em;
     font-weight: 400;
     outline: none;
     transition: .3s;
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
 }
 
 .lyrics:active {
     text-decoration: none;
-    color: #fff;
+    color: #fefefe;
 }
 
 .lyrics:visited {
     text-decoration: none;
-    color: #fff;
+    color: #fefefe;
 }
 
 .modal-content {
     background-color: rgba(0, 0, 0, 0.8);
-    color: #fff !important;
+    color: #fefefe !important;
     border-radius: 20px;
 }
 
@@ -192,7 +193,7 @@ input[type=range]::-webkit-slider-runnable-track {
     cursor: pointer;
     animation: 0.2s;
     box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
-    background: #fff;
+    background: #fefefe;
 }
 
 input[type=range]::-webkit-slider-thumb {
@@ -200,7 +201,7 @@ input[type=range]::-webkit-slider-thumb {
     height: 20px;
     width: 20px;
     border-radius: 50%;
-    background: #fff;
+    background: #fefefe;
     cursor: pointer;
     -webkit-appearance: none;
     margin-top: -8px;
@@ -213,7 +214,7 @@ input[type=range]::-moz-range-track {
     cursor: pointer;
     animation: 0.2s;
     box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
-    background: #fff;
+    background: #fefefe;
 }
 
 input[type=range]::-moz-range-thumb {
@@ -222,7 +223,7 @@ input[type=range]::-moz-range-thumb {
     height: 20px;
     width: 20px;
     border-radius: 50%;
-    background: #fff;
+    background: #fefefe;
     cursor: pointer;
 }
 
@@ -240,13 +241,13 @@ input[type=range]::-ms-track {
 }
 
 input[type=range]::-ms-fill-lower {
-    background: #fff;
+    background: #fefefe;
     border: 0px solid #000101;
     box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
 }
 
 input[type=range]::-ms-fill-upper {
-    background: #fff;
+    background: #fefefe;
     border: 0px solid #000101;
     box-shadow: 0px 0px 0px #000000, 0px 0px 0px #0d0d0d;
 }
@@ -257,18 +258,19 @@ input[type=range]::-ms-thumb {
     height: 20px;
     width: 20px;
     border-radius: 50%;
-    background: #fff;
+    background: #fefefe;
     cursor: pointer;
 }
 
 
 .historic h2 {
-    color: #fff;
-    border-bottom: 2px solid #fff;
-    font-size: 16px;
+    color: #fefefe;
+    border-bottom: 2px solid #fefefe;
+    font-size: 18px;
     font-weight: bold;
     text-transform: uppercase;
     margin: 10px 0;
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
     
 }
 
@@ -388,18 +390,25 @@ input[type=range]::-ms-thumb {
     background-color: white;
     border: none;
     color: black;
-    padding: 12px 25px;
-    font-size: 16px;
+    padding: 10px 20px; /* Reduzindo o preenchimento */
+    font-size: 14px; /* Reduzindo o tamanho da fonte */
     font-weight: bold;
     cursor: pointer;
-    border-radius: 25px;
-    width: 100%;
+    border-radius: 20px;
+    width: auto; /* Largura automática */
     transition: transform .2s;
     box-shadow: 1px 3px #30303022;
 }
+
 .btn-play:focus {outline:0;}
+
 .btn-play:hover {
     box-shadow: 1px 5px #30303022;
     transform: scale(1.1);
+}
+
+.close{
+    color: white;
+
 }
 
