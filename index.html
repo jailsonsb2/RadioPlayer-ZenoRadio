@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="css/animate.css">
     <link rel="stylesheet" href="css/style.css">    
+    <link rel="manifest" href="/manifest.json">
 </head>
 
 <body>
@@ -115,6 +116,18 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"></script>
     <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <script type="text/javascript" src="js/script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/service-worker.js')
+              .then(function(registration) {
+                console.log('Service Worker registrado com sucesso:', registration);
+              }, function(err) {
+                console.log('Falha ao registrar o Service Worker:', err);
+              });
+          });
+        }
+      </script>      
 </body>
 
 </html>
