@@ -9,6 +9,9 @@ const url = 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv';
 // Visit https://api.vagalume.com.br/docs/ to get your API key
 const API_KEY = "18fe07917957c289983464588aabddfb";
 
+// Variable to control history display: true = display / false = hides
+let showHistory = true; 
+
 window.onload = function () {
     var page = new Page;
     page.changeTitlePage();
@@ -376,13 +379,30 @@ function getStreamingData(data) {
     // Mudar o título
     document.title = song + ' - ' + artist + ' | ' + RADIO_NAME;
 
-    // Verificar se a música é diferente da última atualizada
-    if (musicHistory.length === 0 || (musicHistory[0].song !== song)) {
-        // Atualizar o histórico com a nova música
-        updateMusicHistory(artist, song);
-        page.refreshCover(song, artist);
-        page.refreshCurrentSong(song, artist);
-        page.refreshLyric(song, artist);
+    page.refreshCover(song, artist);
+    page.refreshCurrentSong(song, artist);
+    page.refreshLyric(song, artist);
+
+    if (showHistory) {
+
+        // Verificar se a música é diferente da última atualizada
+        if (musicHistory.length === 0 || (musicHistory[0].song !== song)) {
+            // Atualizar o histórico com a nova música
+            updateMusicHistory(artist, song);
+        }
+
+        // Atualizar a interface do histórico
+        updateHistoryUI();
+
+    }
+}
+
+function updateHistoryUI() {
+    let historicElement = document.querySelector('.historic');
+    if (showHistory) {
+      historicElement.classList.remove('hidden'); // Show history
+    } else {
+      historicElement.classList.add('hidden'); // Hide history
     }
 }
 
