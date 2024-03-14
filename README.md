@@ -25,6 +25,8 @@ const URL_STREAMING = 'https://stream.zeno.fm/yn65fsaurfhvv';
 //API URL Zeno Radio Just copy the final segment of your stream URL after the slash (/)
 const API_URL = 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv'
 
+// Variable to control history display: true = display / false = hides
+let showHistory = true; 
 
  ```
 
