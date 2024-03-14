@@ -14,6 +14,7 @@ body {
     overflow-x: hidden;
 }
 
+
 .cover-site {
     min-width: 100%;
     min-height: 100%;
@@ -175,6 +176,10 @@ body {
     border-radius: 20px;
     background-color: #00E1E7;
 }
+
+.hidden {
+    display: none; 
+  }
 
 /* Chrome */
 input[type=range] {
