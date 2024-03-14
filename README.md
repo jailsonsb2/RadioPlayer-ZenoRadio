@@ -22,7 +22,7 @@ const RADIO_NAME = 'Your Radio Name';
 // Change Stream URL Zeno Radio Here.
 const URL_STREAMING = 'https://stream.zeno.fm/yn65fsaurfhvv';
 
-//API URL Zeno Radio Just copy the final segment of your stream URL after the slash (/)
+//API URL Zeno Radio = copy your mount point present in broadcast settings, just the code before /source
 const API_URL = 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv'
 
 // Variable to control history display: true = display / false = hides
