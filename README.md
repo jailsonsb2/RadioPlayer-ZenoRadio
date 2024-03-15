@@ -22,7 +22,12 @@ const RADIO_NAME = 'Your Radio Name';
 // Change Stream URL Zeno Radio Here.
 const URL_STREAMING = 'https://stream.zeno.fm/yn65fsaurfhvv';
 
-//API URL Zeno Radio = copy your mount point present in broadcast settings, just the code before /source
+// To generate the Zeno Radio API link from the mount point,
+// exclude the '/source' part and append the remaining mount point to the base URL of the API.
+// You can find the mount point in the Broadcast Settings.
+// For example, if the mount point is 'yn65fsaurfhvv/source',
+// the API link will be 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv'.
+
 const API_URL = 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv'
 
 // Variable to control history display: true = display / false = hides
@@ -36,7 +41,12 @@ let showHistory = true;
 
  ## Zeno Radio API Now Playing.
 
- Simply copy the mount point or the final segment of your stream URL after the slash (/)
+To generate the Zeno Radio API link from the mount point,
+exclude the '/source' part and append the remaining mount point to the base URL of the API.
+You can find the mount point in the Broadcast Settings.
+For example, if the mount point is 'yn65fsaurfhvv/source',
+the API link will be 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv'.
+
 
  ## Installation
 Just put the files in your server or use Free Hosting
