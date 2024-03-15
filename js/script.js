@@ -3,7 +3,12 @@ const RADIO_NAME = 'Jailson Webradio';
 // Change Stream URL Here, Supports, ICECAST, ZENO, SHOUTCAST, RADIOJAR and any other stream service.
 const URL_STREAMING = 'https://stream.zeno.fm/2p5tpsaurfhvv';
 
-// Change API URL Here
+// You can find the mount point in the Broadcast Settings.
+// To generate the Zeno Radio API link from the mount point,
+// exclude the '/source' part and append the remaining mount point to the base URL of the API.
+// For example, if the mount point is 'yn65fsaurfhvv/source',
+// the API link will be 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv'.
+
 const url = 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv';
 
 // Visit https://api.vagalume.com.br/docs/ to get your API key
