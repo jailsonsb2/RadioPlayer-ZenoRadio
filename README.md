@@ -96,14 +96,10 @@ Here's an example:
 ```
 
 ## Supported Hosting Types
-* Icecast / Shoutcast
 * Zeno Radio
 
 ## Supported API/Data Sources
-* Apple Music / Itunes
 * Deezer
-* Spotify
-* Azuracast Now Playing API 
 
 ## Keyboard Controls 
 * `M` - mute/unmute
