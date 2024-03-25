@@ -6,6 +6,7 @@
 * Lyrics of the current song ([Vagalume API](https://api.vagalume.com.br/docs/))
 * Responsive design
 * Now available as a Progressive Web App (PWA) for enhanced user experience!
+* Now available Azuracast support
 
 ## Demo Screenshots
 
@@ -97,9 +98,11 @@ Here's an example:
 
 ## Supported Hosting Types
 * Zeno Radio
+* Azuracast
 
 ## Supported API/Data Sources
 * Deezer
+* Azuracast
 
 ## Keyboard Controls 
 * `M` - mute/unmute
