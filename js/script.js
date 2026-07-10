@@ -11,9 +11,6 @@ const URL_STREAMING = 'https://stream.zeno.fm/2p5tpsaurfhvv';
 
 const url = 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv';
 
-// Visit https://api.vagalume.com.br/docs/ to get your API key
-const API_KEY = "18fe07917957c289983464588aabddfb";
-
 // Variable to control history display: true = display / false = hides
 let showHistory = true; 
 
@@ -96,36 +93,51 @@ class Page {
             }
         };
 
-        this.refreshLyric = function (currentSong, currentArtist) {
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function () {
-                if (this.readyState === 4 && this.status === 200) {
-                    var data = JSON.parse(this.responseText);
+        this.refreshLyric = async function (currentSong, currentArtist) {
+            // A API do Vagalume foi descontinuada — busca em lyrics.ovh e,
+            // se não encontrar, no LRCLIB (nenhuma exige chave de API).
+            var lyric = null;
+            try {
+                var response = await fetch('https://api.lyrics.ovh/v1/' + encodeURIComponent(currentArtist) + '/' + encodeURIComponent(currentSong));
+                var data = await response.json();
+                if (data && data.lyrics) lyric = data.lyrics;
+            } catch (error) {}
 
-                    var openLyric = document.getElementsByClassName('lyrics')[0];
-
-                    if (data.type === 'exact' || data.type === 'aprox') {
-                        var lyric = data.mus[0].text;
-
-                        document.getElementById('lyric').innerHTML = lyric.replace(/\n/g, '<br />');
-                        openLyric.style.opacity = "1";
-                        openLyric.setAttribute('data-toggle', 'modal');
-                    } else {
-                        openLyric.style.opacity = "0.3";
-                        openLyric.removeAttribute('data-toggle');
-
-                        var modalLyric = document.getElementById('modalLyrics');
-                        modalLyric.style.display = "none";
-                        modalLyric.setAttribute('aria-hidden', 'true');
-                        (document.getElementsByClassName('modal-backdrop')[0]) ? document.getElementsByClassName('modal-backdrop')[0].remove() : '';
+            if (!lyric) {
+                try {
+                    var responseGet = await fetch('https://lrclib.net/api/get?artist_name=' + encodeURIComponent(currentArtist) + '&track_name=' + encodeURIComponent(currentSong));
+                    if (responseGet.ok) {
+                        var dataGet = await responseGet.json();
+                        lyric = dataGet.plainLyrics || dataGet.syncedLyrics || null;
                     }
-                } else {
-                    document.getElementsByClassName('lyrics')[0].style.opacity = "0.3";
-                    document.getElementsByClassName('lyrics')[0].removeAttribute('data-toggle');
-                }
-            };
-            xhttp.open('GET', 'https://api.vagalume.com.br/search.php?apikey=' + API_KEY + '&art=' + currentArtist + '&mus=' + currentSong.toLowerCase(), true);
-            xhttp.send();
+                } catch (error) {}
+            }
+
+            if (!lyric) {
+                try {
+                    var responseSearch = await fetch('https://lrclib.net/api/search?track_name=' + encodeURIComponent(currentSong) + '&artist_name=' + encodeURIComponent(currentArtist));
+                    if (responseSearch.ok) {
+                        var results = await responseSearch.json();
+                        var hit = Array.isArray(results) && results.find(function (r) { return r.plainLyrics || r.syncedLyrics; });
+                        if (hit) lyric = hit.plainLyrics || hit.syncedLyrics;
+                    }
+                } catch (error) {}
+            }
+
+            var openLyric = document.getElementsByClassName('lyrics')[0];
+            if (lyric) {
+                document.getElementById('lyric').innerHTML = lyric.replace(/\n/g, '<br />');
+                openLyric.style.opacity = "1";
+                openLyric.setAttribute('data-toggle', 'modal');
+            } else {
+                openLyric.style.opacity = "0.3";
+                openLyric.removeAttribute('data-toggle');
+
+                var modalLyric = document.getElementById('modalLyrics');
+                modalLyric.style.display = "none";
+                modalLyric.setAttribute('aria-hidden', 'true');
+                (document.getElementsByClassName('modal-backdrop')[0]) ? document.getElementsByClassName('modal-backdrop')[0].remove() : '';
+            }
         };
     }
 }

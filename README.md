@@ -3,7 +3,7 @@
 * Current song
 * Historic of played songs ( added option to show or hide history song )
 * Cover art of the current song ([Deezer API](https://developers.deezer.com/login?redirect=/api))
-* Lyrics of the current song ([Vagalume API](https://api.vagalume.com.br/docs/))
+* Lyrics of the current song via [lyrics.ovh](https://lyrics.ovh) with [LRCLIB](https://lrclib.net) fallback — no API key required
 * Responsive design
 * Now available as a Progressive Web App (PWA) for enhanced user experience!
 * Now available Azuracast support
