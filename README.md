@@ -17,8 +17,7 @@ A modern, dependency-free "now playing" radio player: the album art of the curre
 
 ## Demo Screenshots
 
-![Demo Screenshot](https://i.imgur.com/st7xopB.jpg)
-
+![Demo Screenshot](https://i.imgur.com/RYrH0BM.jpg)
 
 
 
@@ -48,7 +47,12 @@ let showHistory = true;
 
 ## Azuracast
 
-To use an Azuracast panel instead of Zeno Radio, swap the script tag in `index.html` from `js/script.js` to `js/script_azura.js` and edit the constants at the top of that file (`RADIO_NAME`, `URL_STREAMING` and `API_URL` pointing to your `/api/nowplaying/<station>` endpoint).
+For Azuracast there is a ready-made page: [index_azura.html](index_azura.html) (deploy it as-is or rename it to `index.html`). Just edit the constants at the top of [js/script_azura.js](js/script_azura.js) — `RADIO_NAME`, `URL_STREAMING` and `API_URL` pointing to your `/api/nowplaying/<station>` endpoint.
+
+Because the Azuracast API is richer, this version shows extras that the Zeno version can't:
+
+* **Up next** — the next song in the queue (`playing_next`), shown as a pill under the player controls
+* **Full history with artwork** — up to 4 recently played songs, with covers coming straight from the Azuracast API (no Deezer lookups needed)
 
  ## Change Logo.
 

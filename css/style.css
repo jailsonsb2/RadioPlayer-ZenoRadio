@@ -322,6 +322,57 @@ input[type=range]::-moz-range-thumb {
 
 /* o botão da letra herda .ctrl-btn; o script.js controla opacity/data-toggle */
 
+/* ---- próxima música da fila (AzuraCast, index_azura.html) ---- */
+
+.up-next {
+    margin-top: 24px;
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px 10px 14px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+}
+
+.up-next.hidden { display: none; }
+
+.up-next-label {
+    flex: none;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.up-next-cover {
+    width: 40px;
+    height: 40px;
+    flex: none;
+    border-radius: 50%;
+    background: url('../img/cover.png') center / cover no-repeat;
+}
+
+.up-next-info { min-width: 0; }
+
+.up-next-song {
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.up-next-artist {
+    font-size: 12px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* ---- histórico ---- */
 
 .historic {

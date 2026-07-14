@@ -214,8 +214,10 @@ audio.addEventListener('waiting', function () {
     if (!audio.paused) setPlayerIcon('fa fa-spinner fa-spin', 'CARREGANDO');
 });
 
-// Áudio voltou a fluir de verdade: reseta as tentativas de reconexão
+// Áudio voltou a fluir de verdade: reseta as tentativas de reconexão e
+// habilita o watchdog (a partir daqui uma queda deve reconectar sozinha)
 audio.addEventListener('playing', function () {
+    isIntentionalPause = false;
     reconnectAttempts = 0;
     if (reconnectTimeout) clearTimeout(reconnectTimeout);
     setPlayerIcon('fa fa-pause', 'PAUSAR');
@@ -230,7 +232,9 @@ audio.onvolumechange = function () {
 
 // Reconexão automática (rede instável) antes de incomodar o usuário com o
 // confirm() de "Stream Down" — só aparece se 5 tentativas seguidas falharem.
-let isIntentionalPause = false;
+// Começa true: antes da primeira reprodução real não há o que reconectar
+// (ex.: stream fora do ar no carregamento não deve gerar loop nem confirm).
+let isIntentionalPause = true;
 let reconnectAttempts = 0;
 let reconnectTimeout = null;
 

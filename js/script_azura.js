@@ -153,30 +153,72 @@ class Page {
             }
         }
 
-        this.refreshHistoric = function (songData, index) {
-            // Selecione os elementos HTML correspondentes ao histórico de músicas
-            var historicSongs = document.getElementById('historicSong').querySelectorAll('article');
-        
-            // Verifica se o índice está dentro do intervalo válido
-            if (index >= 0 && index < historicSongs.length) {
-                var historicItem = historicSongs[index];
-                var coverElement = historicItem.querySelector('.cover-historic');
-                var songElement = historicItem.querySelector('.song');
-                var artistElement = historicItem.querySelector('.artist');
-        
-                // Atualize os elementos com os dados da música
-                if (coverElement) {
-                    coverElement.style.backgroundImage = 'url(' + songData.art + ')';
-                }
-                if (songElement) {
-                    songElement.textContent = songData.title;
-                }
-                if (artistElement) {
-                    artistElement.textContent = songData.artist;
-                }
-            } else {
-                console.error('Índice fora do intervalo válido para histórico de músicas.');
+        // O AzuraCast entrega o histórico completo (com capas) no próprio
+        // /nowplaying — monta os cards dinamicamente, sem depender de
+        // placeholders fixos no HTML nem de buscas no Deezer.
+        this.refreshHistoric = function (songHistory) {
+            var container = document.getElementById('historicSong');
+            if (!container) return;
+
+            var items = (songHistory || []).slice(0, 4);
+            if (items.length === 0) return;
+
+            var fragment = document.createDocumentFragment();
+            items.forEach(function (item) {
+                var song = item.song || {};
+
+                var article = document.createElement('article');
+                article.className = 'animated slideInRight';
+
+                var cover = document.createElement('div');
+                cover.className = 'cover-historic';
+                if (song.art) cover.style.backgroundImage = 'url(' + song.art + ')';
+
+                var info = document.createElement('div');
+                info.className = 'music-info';
+
+                var titleElement = document.createElement('div');
+                titleElement.className = 'song';
+                titleElement.textContent = song.title || song.text || '';
+
+                var artistElement = document.createElement('div');
+                artistElement.className = 'artist';
+                artistElement.textContent = song.artist || '';
+
+                info.appendChild(titleElement);
+                info.appendChild(artistElement);
+                article.appendChild(cover);
+                article.appendChild(info);
+                fragment.appendChild(article);
+            });
+
+            container.innerHTML = '';
+            container.appendChild(fragment);
+
+            setTimeout(function () {
+                container.querySelectorAll('article').forEach(function (article) {
+                    article.classList.remove('animated', 'slideInRight');
+                });
+            }, 2000);
+        };
+
+        // Próxima música da fila (playing_next) — exclusividade do AzuraCast
+        this.refreshNextSong = function (playingNext) {
+            var box = document.getElementById('upNext');
+            if (!box) return;
+
+            var song = playingNext && playingNext.song;
+            if (!song || !song.title) {
+                box.classList.add('hidden');
+                return;
             }
+
+            box.classList.remove('hidden');
+            document.getElementById('nextSong').textContent = song.title;
+            document.getElementById('nextArtist').textContent = song.artist || '';
+
+            var cover = document.getElementById('nextCover');
+            if (song.art) cover.style.backgroundImage = 'url(' + song.art + ')';
         };
         
         this.changeVolumeIndicator = function (volume) {
@@ -230,29 +272,24 @@ function getStreamingData() {
             // Atualiza o título da página
             document.title = currentSong + ' - ' + currentArtist + ' | ' + RADIO_NAME;
 
-            // Atualiza as informações da música atual
+            // Só reconstrói a interface quando a música de fato muda,
+            // para o polling de 10s não causar flicker
             if (document.getElementById('currentSong').innerHTML !== currentSong) {
                 page.refreshCover(currentSong, currentArtist);
                 page.refreshCurrentSong(currentSong, currentArtist);
+                page.refreshLyric(currentSong, currentArtist);
+                page.refreshHistoric(data.song_history);
+                page.refreshNextSong(data.playing_next);
             }
 
-            // Extrai as informações relevantes para o histórico de músicas
-            var songHistory = data.song_history;
-
-            // Atualiza o histórico de músicas
-            for (var i = 0; i < songHistory.length; i++) {
-                var songData = songHistory[i].song;
-                page.refreshHistoric(songData, i);
-            }
-            
             if (showHistory) {
                 // Atualizar a interface do histórico
                 updateHistoryUI();
-        
+
             }
 
-            
-        } 
+
+        }
     };
 
     // URL da API do AzuraCast
@@ -330,8 +367,10 @@ audio.addEventListener('waiting', function () {
     if (!audio.paused) setPlayerIcon('fa fa-spinner fa-spin', 'CARREGANDO');
 });
 
-// Áudio voltou a fluir de verdade: reseta as tentativas de reconexão
+// Áudio voltou a fluir de verdade: reseta as tentativas de reconexão e
+// habilita o watchdog (a partir daqui uma queda deve reconectar sozinha)
 audio.addEventListener('playing', function () {
+    isIntentionalPause = false;
     reconnectAttempts = 0;
     if (reconnectTimeout) clearTimeout(reconnectTimeout);
     setPlayerIcon('fa fa-pause', 'PAUSAR');
@@ -346,7 +385,9 @@ audio.onvolumechange = function () {
 
 // Reconexão automática (rede instável) antes de incomodar o usuário com o
 // confirm() de "Stream Down" — só aparece se 5 tentativas seguidas falharem.
-let isIntentionalPause = false;
+// Começa true: antes da primeira reprodução real não há o que reconectar
+// (ex.: stream fora do ar no carregamento não deve gerar loop nem confirm).
+let isIntentionalPause = true;
 let reconnectAttempts = 0;
 let reconnectTimeout = null;
 

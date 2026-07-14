@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Radio Player</title>
+    <meta name="theme-color" content="#0b0e13">
+    <link rel="icon" type="image/png" href="img/cover.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="css/animate.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+
+<body>
+
+    <div class="bg" aria-hidden="true">
+        <div id="bgCover"></div>
+        <div class="bg-overlay"></div>
+    </div>
+
+    <button type="button" id="installPwaBtn" class="install-btn" hidden>
+        <i class="fa fa-download"></i> Instalar app
+    </button>
+
+    <main class="app">
+        <header class="masthead">
+            <span id="radioName">Radio Player</span>
+        </header>
+
+        <section class="player">
+            <div class="artwork cover-album">
+                <div id="currentCoverArt"></div>
+            </div>
+
+            <div class="player-info">
+                <span class="live-badge"><span class="live-dot"></span> AO VIVO</span>
+                <h1 id="currentSong" class="text-uppercase">Música</h1>
+                <h2 id="currentArtist" class="text-capitalize">Artista</h2>
+
+                <div class="controls">
+                    <div class="control-cluster">
+                        <div class="volume-wrap volume-control">
+                            <button type="button" class="ctrl-btn volume-toggle" aria-label="Volume" title="Volume">
+                                <i class="fa fa-volume-up"></i>
+                            </button>
+                            <div class="volume-popover" hidden>
+                                <input type="range" id="volume" step="1" min="0" max="100" value="80" aria-label="Volume">
+                                <span class="vol-value"><span id="volIndicator">80</span>%</span>
+                            </div>
+                        </div>
+
+                        <button type="button" class="play-btn" onclick="togglePlay()" aria-label="Tocar ou pausar">
+                            <i id="playerButton" class="fa fa-play"></i>
+                        </button>
+
+                        <button type="button" class="ctrl-btn lyrics" title="Letra da música" aria-label="Letra da música">
+                            <i class="fa fa-music"></i>
+                        </button>
+                    </div>
+                    <span id="buttonPlay" class="sr-only" aria-live="polite">PLAY</span>
+                </div>
+
+                <!-- Próxima música da fila — dado exclusivo do AzuraCast -->
+                <div class="up-next hidden" id="upNext">
+                    <span class="up-next-label">A seguir</span>
+                    <div class="up-next-cover" id="nextCover"></div>
+                    <div class="up-next-info">
+                        <div class="up-next-song" id="nextSong"></div>
+                        <div class="up-next-artist" id="nextArtist"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="historic hidden">
+            <h2 class="section-title">Tocadas recentemente</h2>
+            <div class="history-list" id="historicSong">
+                <article>
+                    <div class="cover-historic"></div>
+                    <div class="music-info">
+                        <div class="song">Música</div>
+                        <div class="artist">Artista</div>
+                    </div>
+                </article>
+                <article>
+                    <div class="cover-historic"></div>
+                    <div class="music-info">
+                        <div class="song">Música</div>
+                        <div class="artist">Artista</div>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <div id="modalLyrics" role="dialog" aria-modal="true" aria-labelledby="lyricsSong" aria-hidden="true">
+        <div class="modal-card">
+            <header>
+                <h3 id="lyricsSong">Letra</h3>
+                <button type="button" class="modal-close" aria-label="Fechar">
+                    <i class="fa fa-times"></i>
+                </button>
+            </header>
+            <div id="lyric"></div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="js/script_azura.js"></script>
+    <script>
+        // Modal de letra (o script sinaliza que há letra disponível
+        // colocando data-toggle no botão .lyrics)
+        (function () {
+            var modal = document.getElementById('modalLyrics');
+            var openButton = document.querySelector('.lyrics');
+
+            function closeModal() {
+                modal.style.display = 'none';
+                modal.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('modal-open');
+            }
+
+            openButton.addEventListener('click', function (event) {
+                event.preventDefault();
+                if (!openButton.hasAttribute('data-toggle')) return; // sem letra disponível
+                modal.style.display = 'flex';
+                modal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('modal-open');
+            });
+
+            modal.addEventListener('click', function (event) {
+                if (event.target === modal) closeModal();
+            });
+            modal.querySelector('.modal-close').addEventListener('click', closeModal);
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape') closeModal();
+            });
+        })();
+
+        // Popover de volume (abre no clique do botão circular, fecha ao clicar fora)
+        (function () {
+            var wrap = document.querySelector('.volume-wrap');
+            var toggle = document.querySelector('.volume-toggle');
+            var popover = document.querySelector('.volume-popover');
+            if (!wrap || !toggle || !popover) return;
+
+            toggle.addEventListener('click', function () {
+                popover.hidden = !popover.hidden;
+            });
+            document.addEventListener('click', function (event) {
+                if (!wrap.contains(event.target)) popover.hidden = true;
+            });
+        })();
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('service-worker.js');
+            });
+        }
+    </script>
+</body>
+
+</html>
