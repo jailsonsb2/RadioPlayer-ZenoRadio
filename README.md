@@ -1,16 +1,24 @@
 # HTML5 Icecast/Shoutcast/Zeno Radio Full Page Radio Player with PWA Support
 
-* Current song
-* Historic of played songs ( added option to show or hide history song )
+A modern, dependency-free "now playing" radio player: the album art of the current song becomes a blurred full-page backdrop, with glass-style circular controls on top. No Bootstrap, no jQuery — just HTML, CSS and vanilla JavaScript.
+
+* Current song with animated transitions and live metadata (Zeno Radio SSE or Azuracast polling)
 * Cover art of the current song ([Deezer API](https://developers.deezer.com/login?redirect=/api))
-* Lyrics of the current song via [lyrics.ovh](https://lyrics.ovh) with [LRCLIB](https://lrclib.net) fallback — no API key required
-* Responsive design
-* Now available as a Progressive Web App (PWA) for enhanced user experience!
-* Now available Azuracast support
+* Lyrics of the current song via [lyrics.ovh](https://lyrics.ovh) with [LRCLIB](https://lrclib.net) fallback — no API key required, with request caching
+* History of recently played songs (option to show or hide)
+* Smooth volume fade in/out on play/pause (no audio "pop")
+* Loading spinner while the stream buffers
+* Automatic reconnection with backoff when the network drops
+* Volume as a circular button with a slider popover (desktop; on mobile the hardware buttons rule)
+* Media Session integration (lock screen / notification controls with artwork)
+* Responsive design — mobile-first single column, side-by-side layout on desktop
+* Progressive Web App (PWA) with an "Install app" button when the browser allows it
+* Azuracast support
 
 ## Demo Screenshots
 
-![Demo Screenshot](https://i.imgur.com/QcbLFzn.jpg)
+![Demo Screenshot](https://i.imgur.com/st7xopB.jpg)
+
 
 
 
@@ -31,12 +39,16 @@ const URL_STREAMING = 'https://stream.zeno.fm/yn65fsaurfhvv';
 // For example, if the mount point is 'yn65fsaurfhvv/source',
 // the API link will be 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv'.
 
-const API_URL = 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv'
+const url = 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhvv';
 
 // Variable to control history display: true = display / false = hides
 let showHistory = true; 
 
  ```
+
+## Azuracast
+
+To use an Azuracast panel instead of Zeno Radio, swap the script tag in `index.html` from `js/script.js` to `js/script_azura.js` and edit the constants at the top of that file (`RADIO_NAME`, `URL_STREAMING` and `API_URL` pointing to your `/api/nowplaying/<station>` endpoint).
 
  ## Change Logo.
 
@@ -52,6 +64,19 @@ the API link will be 'https://api.zeno.fm/mounts/metadata/subscribe/yn65fsaurfhv
 
 ![Demo Screenshot](https://i.imgur.com/8F61uyD.jpg)
 
+## Customizing the Look
+
+All the design tokens live at the top of [css/style.css](css/style.css) as CSS variables — change the accent color, surfaces and radius in one place:
+
+```css
+:root {
+    --accent: #00e1e7;   /* accent color (slider, live dot glow, focus rings) */
+    --bg: #0b0e13;       /* page background */
+    --surface: rgba(255, 255, 255, 0.06);  /* glass surfaces */
+    --border: rgba(255, 255, 255, 0.12);   /* glass borders */
+    --radius: 20px;      /* card corner radius */
+}
+```
 
  ## Installation
 Just put the files in your server or use Free Hosting
@@ -65,7 +90,9 @@ Just put the files in your server or use Free Hosting
 
 ### Progressive Web App (PWA) Support
 
-Now you can install the Radio Player as a Progressive Web App (PWA) to your device for an enhanced experience! Simply visit the website on a supported browser and follow the prompts to install it.
+Now you can install the Radio Player as a Progressive Web App (PWA) to your device for an enhanced experience! When the browser signals that installation is available, an "Install app" button appears (top-right on desktop, bottom of the screen on mobile).
+
+**Note:** after deploying an update, the service worker cache version in `service-worker.js` (`CACHE_NAME`) should be bumped so returning visitors get the new files.
 
 ### Configuring Radio Name and Colors
 
@@ -83,8 +110,8 @@ Here's an example:
   "short_name": "Radio Player",
   "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#ffffff",  // Customize this color to match your branding
-  "theme_color": "#ffffff",       // Customize this color to match your branding
+  "background_color": "#0b0e13",  // Customize this color to match your branding
+  "theme_color": "#0b0e13",       // Customize this color to match your branding
   "icons": [
     {
       "src": "img/cover.png",
@@ -101,7 +128,8 @@ Here's an example:
 * Azuracast
 
 ## Supported API/Data Sources
-* Deezer
+* Deezer (cover art)
+* lyrics.ovh + LRCLIB (lyrics)
 * Azuracast
 
 ## Keyboard Controls 
@@ -115,10 +143,6 @@ Here's an example:
 
 If you have any feedback, please reach out to me at contact@jailson.es
 
-
-## License
-
-[MIT](https://github.com/gsavio/player-shoutcast-html5/blob/master/LICENSE)
 
 ## Credits
 * [gsavio/player-shoutcast-html5](https://github.com/gsavio/player-shoutcast-html5)

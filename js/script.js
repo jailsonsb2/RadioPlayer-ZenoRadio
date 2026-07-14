@@ -19,20 +19,65 @@ window.onload = function () {
     page.changeTitlePage();
     page.setVolume();
 
+    var radioName = document.getElementById('radioName');
+    if (radioName) radioName.textContent = RADIO_NAME;
+
     var player = new Player();
     player.play();
 
-    getStreamingData();
-    // Interval to get streaming data in miliseconds
-    setInterval(function () {
-        getStreamingData();
-    }, 10000);
-
-    var coverArt = document.getElementsByClassName('cover-album')[0];
-
-    coverArt.style.height = coverArt.offsetWidth + 'px';
+    // Os dados da música tocando agora chegam via SSE (connectToEventSource),
+    // não por polling. A altura da capa é responsabilidade do CSS (aspect-ratio).
 
     localStorage.removeItem('musicHistory');
+}
+
+// Cache de letras: guarda a própria Promise (não só o resultado) para que
+// duas chamadas quase simultâneas para a mesma música (SSE + polling)
+// reaproveitem a mesma requisição em vez de martelar as APIs de novo.
+var lyricsCache = {};
+
+function fetchLyrics(currentArtist, currentSong) {
+    var cacheKey = (currentArtist + ' - ' + currentSong).toLowerCase();
+    if (lyricsCache[cacheKey]) {
+        return lyricsCache[cacheKey];
+    }
+
+    var promise = (async function () {
+        // A API do Vagalume foi descontinuada — busca em lyrics.ovh e,
+        // se não encontrar, no LRCLIB (nenhuma exige chave de API).
+        var lyric = null;
+        try {
+            var response = await fetch('https://api.lyrics.ovh/v1/' + encodeURIComponent(currentArtist) + '/' + encodeURIComponent(currentSong));
+            var data = await response.json();
+            if (data && data.lyrics) lyric = data.lyrics;
+        } catch (error) {}
+
+        if (!lyric) {
+            try {
+                var responseGet = await fetch('https://lrclib.net/api/get?artist_name=' + encodeURIComponent(currentArtist) + '&track_name=' + encodeURIComponent(currentSong));
+                if (responseGet.ok) {
+                    var dataGet = await responseGet.json();
+                    lyric = dataGet.plainLyrics || dataGet.syncedLyrics || null;
+                }
+            } catch (error) {}
+        }
+
+        if (!lyric) {
+            try {
+                var responseSearch = await fetch('https://lrclib.net/api/search?track_name=' + encodeURIComponent(currentSong) + '&artist_name=' + encodeURIComponent(currentArtist));
+                if (responseSearch.ok) {
+                    var results = await responseSearch.json();
+                    var hit = Array.isArray(results) && results.find(function (r) { return r.plainLyrics || r.syncedLyrics; });
+                    if (hit) lyric = hit.plainLyrics || hit.syncedLyrics;
+                }
+            } catch (error) {}
+        }
+
+        return lyric;
+    })();
+
+    lyricsCache[cacheKey] = promise;
+    return promise;
 }
 
 // DOM control
@@ -67,12 +112,9 @@ class Page {
 
         // Função para atualizar a capa
         this.refreshCover = function (song = '', artist) {
-            // Default cover art
-            var urlCoverArt = 'img/cover.png';
-
             // Criação da tag de script para fazer a requisição JSONP à API do Deezer
             const script = document.createElement('script');
-            script.src = `https://api.deezer.com/search?q=${artist} ${song}&output=jsonp&callback=handleDeezerResponse`;
+            script.src = `https://api.deezer.com/search?q=${encodeURIComponent(artist + ' ' + song)}&output=jsonp&callback=handleDeezerResponse`;
             document.body.appendChild(script);
         };
 
@@ -94,35 +136,7 @@ class Page {
         };
 
         this.refreshLyric = async function (currentSong, currentArtist) {
-            // A API do Vagalume foi descontinuada — busca em lyrics.ovh e,
-            // se não encontrar, no LRCLIB (nenhuma exige chave de API).
-            var lyric = null;
-            try {
-                var response = await fetch('https://api.lyrics.ovh/v1/' + encodeURIComponent(currentArtist) + '/' + encodeURIComponent(currentSong));
-                var data = await response.json();
-                if (data && data.lyrics) lyric = data.lyrics;
-            } catch (error) {}
-
-            if (!lyric) {
-                try {
-                    var responseGet = await fetch('https://lrclib.net/api/get?artist_name=' + encodeURIComponent(currentArtist) + '&track_name=' + encodeURIComponent(currentSong));
-                    if (responseGet.ok) {
-                        var dataGet = await responseGet.json();
-                        lyric = dataGet.plainLyrics || dataGet.syncedLyrics || null;
-                    }
-                } catch (error) {}
-            }
-
-            if (!lyric) {
-                try {
-                    var responseSearch = await fetch('https://lrclib.net/api/search?track_name=' + encodeURIComponent(currentSong) + '&artist_name=' + encodeURIComponent(currentArtist));
-                    if (responseSearch.ok) {
-                        var results = await responseSearch.json();
-                        var hit = Array.isArray(results) && results.find(function (r) { return r.plainLyrics || r.syncedLyrics; });
-                        if (hit) lyric = hit.plainLyrics || hit.syncedLyrics;
-                    }
-                } catch (error) {}
-            }
+            var lyric = await fetchLyrics(currentArtist, currentSong);
 
             var openLyric = document.getElementsByClassName('lyrics')[0];
             if (lyric) {
@@ -149,7 +163,12 @@ var audio = new Audio(URL_STREAMING);
 class Player {
     constructor() {
         this.play = function () {
-            audio.play();
+            var playPromise = audio.play();
+            if (playPromise !== undefined) {
+                // Autoplay bloqueado pelo navegador até a primeira interação:
+                // não é um erro, o usuário dá o play manualmente.
+                playPromise.catch(function () {});
+            }
 
             var defaultVolume = document.getElementById('volume').value;
 
@@ -171,25 +190,36 @@ class Player {
     }
 }
 
-// On play, change the button to pause
-audio.onplay = function () {
+function setPlayerIcon(iconClass, label) {
     var botao = document.getElementById('playerButton');
     var bplay = document.getElementById('buttonPlay');
-    if (botao.className === 'fa fa-play') {
-        botao.className = 'fa fa-pause';
-        bplay.firstChild.data = 'PAUSAR';
-    }
+    botao.className = iconClass;
+    bplay.firstChild.data = label;
 }
 
-// On pause, change the button to play
-audio.onpause = function () {
-    var botao = document.getElementById('playerButton');
-    var bplay = document.getElementById('buttonPlay');
-    if (botao.className === 'fa fa-pause') {
-        botao.className = 'fa fa-play';
-        bplay.firstChild.data = 'PLAY';
-    }
+// On play, change the button to pause
+audio.onplay = function () {
+    setPlayerIcon('fa fa-pause', 'PAUSAR');
 }
+
+// On pause, change the button to play (a menos que estejamos exibindo o
+// spinner de reconexão, que também pausa o áudio momentaneamente)
+audio.onpause = function () {
+    if (!isIntentionalPause && reconnectAttempts > 0) return;
+    setPlayerIcon('fa fa-play', 'PLAY');
+}
+
+// Enquanto o áudio estiver em buffer, mostra o spinner girando
+audio.addEventListener('waiting', function () {
+    if (!audio.paused) setPlayerIcon('fa fa-spinner fa-spin', 'CARREGANDO');
+});
+
+// Áudio voltou a fluir de verdade: reseta as tentativas de reconexão
+audio.addEventListener('playing', function () {
+    reconnectAttempts = 0;
+    if (reconnectTimeout) clearTimeout(reconnectTimeout);
+    setPlayerIcon('fa fa-pause', 'PAUSAR');
+});
 
 // Unmute when volume changed
 audio.onvolumechange = function () {
@@ -198,12 +228,80 @@ audio.onvolumechange = function () {
     }
 }
 
-audio.onerror = function () {
-    var confirmacao = confirm('Stream Down / Network Error. \nClick OK to try again.');
+// Reconexão automática (rede instável) antes de incomodar o usuário com o
+// confirm() de "Stream Down" — só aparece se 5 tentativas seguidas falharem.
+let isIntentionalPause = false;
+let reconnectAttempts = 0;
+let reconnectTimeout = null;
 
-    if (confirmacao) {
-        window.location.reload();
+function handleConnectionDrop() {
+    if (isIntentionalPause) return;
+
+    if (reconnectTimeout) clearTimeout(reconnectTimeout);
+
+    if (reconnectAttempts < 5) {
+        reconnectAttempts++;
+        setPlayerIcon('fa fa-spinner fa-spin', 'RECONECTANDO');
+        var delay = reconnectAttempts * 2000;
+
+        reconnectTimeout = setTimeout(function () {
+            audio.load();
+            var playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(function (e) { console.error('Falha ao reconectar:', e); });
+            }
+        }, delay);
+    } else {
+        reconnectAttempts = 0;
+        setPlayerIcon('fa fa-play', 'PLAY');
+
+        var confirmacao = confirm('Stream Down / Network Error. \nClick OK to try again.');
+        if (confirmacao) {
+            window.location.reload();
+        }
     }
+}
+
+audio.onerror = handleConnectionDrop;
+audio.addEventListener('stalled', handleConnectionDrop);
+
+// Fade suave no volume ao dar play/pause, para evitar o "estalo" de áudio
+let fadeInterval = null;
+
+function fadeOut(callback) {
+    if (fadeInterval) clearInterval(fadeInterval);
+    var currentVol = audio.volume;
+    var step = currentVol / 15;
+
+    fadeInterval = setInterval(function () {
+        currentVol -= step;
+        if (currentVol <= 0.05) {
+            audio.volume = 0;
+            clearInterval(fadeInterval);
+            fadeInterval = null;
+            if (callback) callback();
+        } else {
+            audio.volume = currentVol;
+        }
+    }, 30);
+}
+
+function fadeIn() {
+    if (fadeInterval) clearInterval(fadeInterval);
+    var targetVol = intToDecimal(localStorage.getItem('volume') || document.getElementById('volume').value || 80);
+    audio.volume = 0;
+    var step = targetVol / 15;
+
+    fadeInterval = setInterval(function () {
+        var newVol = audio.volume + step;
+        if (newVol >= targetVol) {
+            audio.volume = targetVol;
+            clearInterval(fadeInterval);
+            fadeInterval = null;
+        } else {
+            audio.volume = newVol;
+        }
+    }, 30);
 }
 
 document.getElementById('volume').oninput = function () {
@@ -215,8 +313,14 @@ document.getElementById('volume').oninput = function () {
 
 function togglePlay() {
     if (!audio.paused) {
-        audio.pause();
+        isIntentionalPause = true;
+        if (reconnectTimeout) clearTimeout(reconnectTimeout);
+        fadeOut(function () {
+            audio.pause();
+        });
     } else {
+        isIntentionalPause = false;
+        fadeIn();
         audio.load();
         audio.play();
     }
@@ -314,69 +418,34 @@ function processData(data) {
 // Iniciar a conexão com a API
 connectToEventSource(url);
 
-// Define a função de manipulação da resposta da API do Deezer no escopo global
-function handleDeezerResponse(data, song) {
+// Define a função de manipulação da resposta da API do Deezer no escopo global.
+// O JSONP só passa `data` — título/artista atuais vêm do DOM.
+function handleDeezerResponse(data) {
     var coverArt = document.getElementById('currentCoverArt');
     var coverBackground = document.getElementById('bgCover');
 
-    if (data.data && data.data.length > 0) {
-        // Buscar o Cover pelo nome do Artista
-        // var artworkUrl = data.data[0].artist.picture_big;
-        // Buscar o Cover pelo nome da música
-        var artworkUrl = data.data[0].album.cover_big;
+    var hasResult = data && data.data && data.data.length > 0;
+    // Buscar o Cover pelo nome da música (artist.picture_big buscaria pelo artista)
+    var artworkUrl = hasResult ? data.data[0].album.cover_big : 'img/cover.png';
 
-        coverArt.style.backgroundImage = 'url(' + artworkUrl + ')';
-        coverArt.className = 'animated bounceInLeft';
-
-        coverBackground.style.backgroundImage = 'url(' + artworkUrl + ')';
-    } else {
-        // Caso não haja dados ou a lista de dados esteja vazia,
-        // defina a capa padrão
-        var defaultArtworkUrl = 'img/cover.png';
-
-        coverArt.style.backgroundImage = 'url(' + defaultArtworkUrl + ')';
-        coverBackground.style.backgroundImage = 'url(' + defaultArtworkUrl + ')';
-    }
+    coverArt.style.backgroundImage = 'url(' + artworkUrl + ')';
+    coverArt.className = 'animated bounceInLeft';
+    coverBackground.style.backgroundImage = 'url(' + artworkUrl + ')';
 
     setTimeout(function () {
         coverArt.className = '';
     }, 2000);
 
     if ('mediaSession' in navigator) {
+        var songTitle = document.getElementById('currentSong').textContent;
+        var artistName = hasResult ? data.data[0].artist.name : document.getElementById('currentArtist').textContent;
+
         navigator.mediaSession.metadata = new MediaMetadata({
-            title: song,
-            artist: data.data[0].artist.name,
-            artwork: [{
-                    src: artworkUrl || defaultArtworkUrl,
-                    sizes: '96x96',
-                    type: 'image/png'
-                },
-                {
-                    src: artworkUrl || defaultArtworkUrl,
-                    sizes: '128x128',
-                    type: 'image/png'
-                },
-                {
-                    src: artworkUrl || defaultArtworkUrl,
-                    sizes: '192x192',
-                    type: 'image/png'
-                },
-                {
-                    src: artworkUrl || defaultArtworkUrl,
-                    sizes: '256x256',
-                    type: 'image/png'
-                },
-                {
-                    src: artworkUrl || defaultArtworkUrl,
-                    sizes: '384x384',
-                    type: 'image/png'
-                },
-                {
-                    src: artworkUrl || defaultArtworkUrl,
-                    sizes: '512x512',
-                    type: 'image/png'
-                }
-            ]
+            title: songTitle,
+            artist: artistName,
+            artwork: ['96x96', '128x128', '192x192', '256x256', '384x384', '512x512'].map(function (size) {
+                return { src: artworkUrl, sizes: size, type: 'image/png' };
+            })
         });
     }
 }
@@ -508,9 +577,10 @@ document.addEventListener('keydown', function (event) {
             slideVolume.value = decimalToInt(audio.volume);
             page.changeVolumeIndicator(decimalToInt(audio.volume));
             break;
-        // Spacebar
+        // Spacebar (preventDefault evita rolar a página junto)
         case ' ':
         case 'Spacebar':
+            event.preventDefault();
             togglePlay();
             break;
         // P
@@ -550,3 +620,32 @@ function intToDecimal(vol) {
 function decimalToInt(vol) {
     return vol * 100;
 }
+
+// Botão de instalar como PWA: só aparece quando o navegador sinaliza que a
+// instalação está disponível (manifest + service worker já registrados).
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', function (event) {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    var installBtn = document.getElementById('installPwaBtn');
+    if (installBtn) installBtn.hidden = false;
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    var installBtn = document.getElementById('installPwaBtn');
+    if (!installBtn) return;
+
+    installBtn.addEventListener('click', function () {
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then(function () {
+            deferredInstallPrompt = null;
+            installBtn.hidden = true;
+        });
+    });
+
+    window.addEventListener('appinstalled', function () {
+        installBtn.hidden = true;
+    });
+});
