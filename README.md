@@ -1,4 +1,12 @@
-# HTML5 Icecast/Shoutcast/Zeno Radio Full Page Radio Player with PWA Support
+# 🎵 Radio Player Zeno.FM — Free HTML5 Web Radio Player
+
+[![Live Demo](https://img.shields.io/badge/▶_Live_Demo-online-brightgreen)](https://jailsonsb2.github.io/RadioPlayer-ZenoRadio/)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
+[![No API Key](https://img.shields.io/badge/API_key-not_required-orange)](#)
+
+**[▶ Try the live demo](https://jailsonsb2.github.io/RadioPlayer-ZenoRadio/)** — a full-page **HTML5 radio player for Zeno.FM** streams (Icecast/Shoutcast/Azuracast supported too): now playing metadata via Zeno's SSE API, album art, song lyrics, recently played history and installable **PWA**.
+
+> 🇧🇷 **Player de rádio Zeno FM para o seu site — grátis e sem chave de API.** Mostra a música tocando agora com capa do álbum, letra da música e histórico. É só editar duas linhas no script e hospedar em qualquer servidor (ou de graça na Vercel/Netlify/GitHub Pages).
 
 A modern, dependency-free "now playing" radio player: the album art of the current song becomes a blurred full-page backdrop, with glass-style circular controls on top. No Bootstrap, no jQuery — just HTML, CSS and vanilla JavaScript.
 
@@ -142,6 +150,17 @@ Here's an example:
 * `arrow up` and `arrow down` - increase/decrease volume
 * `0 to 9` - volume percent
 
+
+## Related Projects
+
+More free radio players from the same author:
+
+| Project | Style |
+|---|---|
+| [**RadioPlayer**](https://github.com/jailsonsb2/RadioPlayer) | Full-page player for **any stream** (free now-playing API, YouTube clip mode) |
+| [**Radioplayer_api**](https://github.com/jailsonsb2/Radioplayer_api) | Multi-station player with **3 switchable layouts** |
+| [**bottom_radioplayer**](https://github.com/jailsonsb2/bottom_radioplayer) | **Bottom-bar component** — the audio never stops while visitors navigate |
+| [**metadados**](https://github.com/jailsonsb2/metadados) | The free **now playing API** (ICY metadata + iTunes + YouTube clips) |
 
 ## Feedback
 
