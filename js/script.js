@@ -442,7 +442,9 @@ function handleDeezerResponse(data) {
 
     if ('mediaSession' in navigator) {
         var songTitle = document.getElementById('currentSong').textContent;
-        var artistName = hasResult ? data.data[0].artist.name : document.getElementById('currentArtist').textContent;
+        // O ICY é lei: o Deezer só fornece a capa — o artista exibido (na
+        // tela e na tela de bloqueio) é sempre o que a rádio transmitiu
+        var artistName = document.getElementById('currentArtist').textContent;
 
         navigator.mediaSession.metadata = new MediaMetadata({
             title: songTitle,
