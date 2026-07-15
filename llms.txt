@@ -1,0 +1,15 @@
+# Radio Player Zeno.FM
+
+> Free full-page HTML5 radio player for Zeno.FM streams (also works with Icecast, Shoutcast and Azuracast). Real-time now-playing via Zeno's SSE metadata API, album art from Deezer, song lyrics (lyrics.ovh + LRCLIB), recently played history and installable PWA. No API key required; setup is editing two lines in js/script.js. Pt-BR: player de rádio Zeno FM grátis para o seu site.
+
+## Docs
+- [README](https://github.com/jailsonsb2/RadioPlayer-ZenoRadio#readme): setup, Azuracast variant (index_azura.html with up-next queue), theming via CSS variables
+- [Live demo](https://jailsonsb2.github.io/RadioPlayer-ZenoRadio/): working player you can try
+
+## Source
+- [GitHub repository](https://github.com/jailsonsb2/RadioPlayer-ZenoRadio): AGPL-3.0 (commercial license available)
+
+## Related
+- [RadioPlayer](https://github.com/jailsonsb2/RadioPlayer): full-page player for any stream, with YouTube clip mode
+- [bottom_radioplayer](https://github.com/jailsonsb2/bottom_radioplayer): bottom-bar component where the audio never stops while visitors navigate
+- [Radioplayer_api](https://github.com/jailsonsb2/Radioplayer_api): multi-station player with 3 switchable layouts

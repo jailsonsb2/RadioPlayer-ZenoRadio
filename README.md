@@ -29,7 +29,7 @@ A modern, dependency-free "now playing" radio player: the album art of the curre
 
 
 
-# Documentation.
+## How do I set up this player for my radio?
 
 Open The [Script.js](https://github.com/jailsonsb2/RadioPlayer-ZenoRadio/blob/main/js/script.js) file and edit the lines Below.
 
